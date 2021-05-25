@@ -3,8 +3,8 @@
 export default {
   async fetch(request, env) {
     return await handleRequest(request, env);
-  }
-}
+  },
+};
 
 async function handleRequest(request, env) {
   let id = env.COUNTER.idFromName("A");
@@ -23,7 +23,9 @@ export class Counter {
   }
 
   async initialize() {
+    // First we get the stored value from state storage. It goes into the stored variable.
     let stored = await this.state.storage.get("value");
+    //If there is something in stored, it goes into this.value. Otherwise we put in 0.
     this.value = stored || 0;
   }
 
@@ -38,28 +40,22 @@ export class Counter {
         // promise on an error can be tricky to get right -- we don't
         // recommend customizing it.
         this.initializePromise = undefined;
-        throw err
+        throw err;
       });
     }
     await this.initializePromise;
 
     // Apply requested action.
     let url = new URL(request.url);
+    //Here we put the this.value (from storage) into currentValue
+
     let currentValue = this.value;
-    switch (url.pathname) {
-    case "/increment":
-      currentValue = ++this.value;
+    if (url.pathname == "/") {
+    } else if (url.pathname == "/favicon.ico") {
+    } else {
+      currentValue = currentValue + " " + url.pathname;
+      this.value = currentValue;
       await this.state.storage.put("value", this.value);
-      break;
-    case "/decrement":
-      currentValue = --this.value;
-      await this.state.storage.put("value", this.value);
-      break;
-    case "/":
-      // Just serve the current value. No storage calls needed!
-      break;
-    default:
-      return new Response("Not found", {status: 404});
     }
 
     // Return `currentValue`. Note that `this.value` may have been
